@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التاجر الذكي - النسخة المحمية</title>
+<style>
+  :root {
+    --primary: #1e3a5f;
+    --accent: #0f766e;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --success: #16a34a;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+  body { margin: 0; padding: 14px; background: var(--bg); color: var(--text); }
+
+  /* شاشة القفل والتفعيل */
+  #lockScreen {
+    min-height: 92vh; display: flex; align-items: center; justify-content: center;
+  }
+  .lock-card {
+    background: var(--card); border-radius: 18px; padding: 22px; width: 100%;
+    max-width: 440px; border: 1px solid var(--border);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); text-align: center;
+  }
+  .lock-icon {
+    width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 12px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+  }
+  .device-box {
+    background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 10px;
+    padding: 12px; margin: 14px 0; direction: ltr; font-family: monospace;
+    font-size: 1rem; font-weight: bold; color: var(--primary); word-break: break-all;
+  }
+  .copy-btn {
+    background: #e2e8f0; color: var(--text); border: none; border-radius: 8px;
+    padding: 7px 14px; font-size: 0.85rem; font-weight: bold; cursor: pointer;
+    margin-bottom: 14px;
+  }
+
+  /* واجهة التطبيق الرئيسية */
+  #mainApp { display: none; }
+  .container { max-width: 640px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white; padding: 18px; border-radius: 16px; margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .brand-info { display: flex; align-items: center; gap: 12px; }
+  .brand-logo {
+    width: 52px; height: 52px; border-radius: 12px; object-fit: cover;
+    background: rgba(255,255,255,0.18); display: flex; align-items: center;
+    justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.3);
+  }
+  header h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  header p { margin: 0; font-size: 0.8rem; opacity: 0.9; }
+  .settings-btn {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+    color: white; padding: 8px 12px; border-radius: 10px; font-size: 0.8rem;
+    cursor: pointer; width: auto; margin: 0; white-space: nowrap;
+  }
+  .tabs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px;
+  }
+  .tab-btn {
+    background: var(--card); color: var(--muted); border: 1px solid var(--border);
+    padding: 10px; border-radius: 10px; font-size: 0.9rem; font-weight: bold;
+    cursor: pointer; margin: 0;
+  }
+  .tab-btn.active {
+    background: var(--primary); color: white; border-color: var(--primary);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--card); padding: 12px; border-radius: 12px;
+    border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+  .stat-title { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+  .stat-value { font-size: 1.15rem; font-weight: bold; color: var(--primary); }
+  .stat-value.profit { color: var(--success); }
+  .stat-value.loss { color: var(--danger); }
+  .card {
+    background: var(--card); padding: 16px; border-radius: 14px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 1.02rem; color: var(--primary); }
+  .form-group { margin-bottom: 10px; }
+  label { display: block; font-size: 0.82rem; margin-bottom: 4px; color: var(--muted); }
+  input, select {
+    width: 100%; padding: 10px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.92rem; background: #fff;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  button.primary-btn {
+    width: 100%; padding: 11px; border: none; border-radius: 10px;
+    background: var(--accent); color: white; font-size: 0.95rem; font-weight: bold;
+    cursor: pointer; margin-top: 6px;
+  }
+  button.secondary-btn {
+    width: 100%; padding: 11px; border: none; border-radius: 10px;
+    background: var(--primary); color: white; font-size: 0.92rem; font-weight: bold;
+    cursor: pointer; margin-top: 8px;
+  }
+  button.danger-btn {
+    background: #fee2e2; color: var(--danger); padding: 5px 9px;
+    font-size: 0.78rem; border: none; border-radius: 6px; cursor: pointer; width: auto;
+  }
+  button.restock-btn {
+    background: #e0f2fe; color: #0369a1; padding: 5px 8px;
+    font-size: 0.78rem; border: none; border-radius: 6px; cursor: pointer; width: auto; margin-left: 4px;
+  }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th, td { padding: 9px 6px; text-align: right; border-bottom: 1px solid var(--border); }
+  th { background: #f8fafc; color: var(--muted); }
+  .badge { padding: 3px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: bold; }
+  .badge-bank { background: #e0f2fe; color: #0369a1; }
+  .badge-cash { background: #dcfce7; color: #15803d; }
+  .badge-exp { background: #fee2e2; color: #b91c1c; }
+  .badge-low { background: #fef3c7; color: #b45309; }
+  .badge-ok { background: #dcfce7; color: #15803d; }
+  .modal {
+    display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+    align-items: center; justify-content: center; padding: 16px; z-index: 100;
+  }
+  .modal.open { display: flex; }
+  .modal-box {
+    background: white; border-radius: 16px; padding: 18px; width: 100%; max-width: 440px;
+  }
+  .footer-rights {
+    text-align: center; font-size: 0.78rem; color: var(--muted);
+    padding: 12px 6px 20px;
+  }
+</style>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1e3a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+<!-- شاشة القفل ببصمة الجهاز -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h2 style="margin:0 0 6px;color:var(--primary)">تفعيل النسخة المرخصة</h2>
+    <p style="margin:0;font-size:0.85rem;color:var(--muted)">
+      هذه النسخة مقفلة على جهاز واحد فقط. أرسل رقم معرّف جهازك للمطور للحصول على كود التفعيل الخاص بك.
+    </p>
+    <div class="device-box" id="displayDeviceId">جاري التوليد...</div>
+    <button class="copy-btn" onclick="copyDeviceId()">📋 نسخ رقم الجهاز</button>
+
+    <div class="form-group" style="text-align:right">
+      <label>أدخل كود التفعيل السري</label>
+      <input type="text" id="activationInput" placeholder="مثال: TJR-8F3K29A1" style="text-align:center;font-weight:bold;letter-spacing:1px">
+    </div>
+    <button class="primary-btn" onclick="verifyActivation()">تفعيل وتشغيل النظام</button>
+    <p id="lockError" style="color:var(--danger);font-size:0.82rem;margin-top:8px;display:none"></p>
+  </div>
+</div>
+
+<!-- التطبيق الرئيسي بعد التفعيل -->
+<div id="mainApp">
+  <div class="container">
+    <header>
+      <div class="brand-info">
+        <div id="logoContainer" class="brand-logo">📊</div>
+        <div>
+          <h1 id="brandTitle">التاجر الذكي</h1>
+          <p id="brandSubtitle">نظام إدارة المبيعات، المخزون، والتحويلات البنكية</p>
+        </div>
+      </div>
+      <button class="settings-btn" onclick="openBrandModal()">⚙️ الهوية والشعار</button>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('ops', this)">العمليات اليومية</button>
+      <button class="tab-btn" onclick="switchTab('inv', this)">إدارة المخزون</button>
+      <button class="tab-btn" onclick="switchTab('rep', this)">التقارير والجرد</button>
+    </div>
+
+    <div id="tab-ops" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">إجمالي المبيعات</div>
+          <div class="stat-value" id="totalSales">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">صافي الربح الفعلي</div>
+          <div class="stat-value profit" id="netProfit">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">تحويلات (بنكك/فوري)</div>
+          <div class="stat-value" id="bankTotal">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">النقدية (كاش)</div>
+          <div class="stat-value" id="cashTotal">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>تسجيل عملية بيع أو مصروف</h2>
+        <div class="row">
+          <div class="form-group">
+            <label>نوع العملية</label>
+            <select id="opType" onchange="toggleOpFields()">
+              <option value="sale">مبيعات (من المخزون أو حر)</option>
+              <option value="expense">مصروفات تشغيلية</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>طريقة الدفع</label>
+            <select id="payMethod">
+              <option value="bank">تحويل بنكي (بنكك / فوري)</option>
+              <option value="cash">كاش (نقدي)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="selectProductGroup">
+          <label>اختر صنفاً من المخزون (أو اتركه لإدخال حر)</label>
+          <select id="productSelect" onchange="fillProductDetails()">
+            <option value="">-- صنف حر غير مسجل بالمخزون --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>البيان / اسم الصنف</label>
+          <input type="text" id="itemDesc" placeholder="مثال: علبة هدايا فاخرة / مصروف توصيل">
+        </div>
+
+        <div class="row-3">
+          <div class="form-group" id="qtyGroup">
+            <label>الكمية المباعة</label>
+            <input type="number" id="saleQty" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label id="amountLabel">سعر بيع الوحدة</label>
+            <input type="number" id="amount" placeholder="0">
+          </div>
+          <div class="form-group" id="costGroup">
+            <label>تكلفة الوحدة</label>
+            <input type="number" id="cost" placeholder="0">
+          </div>
+        </div>
+
+        <button class="primary-btn" onclick="addRecord()">حفظ العملية وتحديث المخزون</button>
+      </div>
+
+      <div class="card">
+        <h2>آخر العمليات المسجلة</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>البيان</th>
+                <th>الكمية</th>
+                <th>الإجمالي</th>
+                <th>الربح</th>
+                <th>حذف</th>
+              </tr>
+            </thead>
+            <tbody id="recordsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-inv" class="tab-content">
+      <div class="card">
+        <h2>إضافة صنف جديد للمخزون</h2>
+        <div class="form-group">
+          <label>اسم الصنف</label>
+          <input type="text" id="prodName" placeholder="مثال: بوكس تذكار الملكي">
+        </div>
+        <div class="row-3">
+          <div class="form-group">
+            <label>الكمية المتوفرة</label>
+            <input type="number" id="prodQty" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>تكلفة القطعة</label>
+            <input type="number" id="prodCost" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>سعر البيع</label>
+            <input type="number" id="prodPrice" placeholder="0" min="0">
+          </div>
+        </div>
+        <button class="primary-btn" onclick="addProduct()">إضافة الصنف للمخزون</button>
+      </div>
+
+      <div class="card">
+        <h2>قائمة الأصناف والكميات المتبقية</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>الصنف</th>
+                <th>المتوفر</th>
+                <th>التكلفة</th>
+                <th>البيع</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-rep" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">قيمة المخزون (بالتكلفة)</div>
+          <div class="stat-value" id="invTotalCost">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">القيمة البيعية المتوقعة</div>
+          <div class="stat-value profit" id="invTotalValue">0</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>تصدير التقارير المحاسبية</h2>
+        <p style="font-size:0.85rem;color:var(--muted);margin-top:0">
+          استخرج ملفات إكسل جاهزة للمراجعة المحاسبية الأسبوعية أو إرسالها للعميل.
+        </p>
+        <button class="secondary-btn" onclick="exportSalesCSV()">📥 تصدير سجل المبيعات والمصروفات (CSV)</button>
+        <button class="primary-btn" onclick="exportInventoryCSV()">📥 تصدير جرد المخزون الحالي (CSV)</button>
+      </div>
+    </div>
+
+    <div class="footer-rights" id="rightsFooter">
+      نسخة مرخصة ومحمية بحقوق الملكية الفكرية — يُمنع النسخ أو إعادة التوزيع دون ترخيص رسمي.
+    </div>
+  </div>
+</div>
+
+<!-- نافذة تخصيص الهوية والشعار -->
+<div id="brandModal" class="modal">
+  <div class="modal-box">
+    <h2 style="margin-top:0;color:var(--primary)">تخصيص اسم وشعار المشروع</h2>
+    <div class="form-group">
+      <label>اسم المتجر أو العلامة التجارية</label>
+      <input type="text" id="inputBrandName" placeholder="مثال: تذكار للهدايا / متجر النور">
+    </div>
+    <div class="form-group">
+      <label>الوصف المختصر تحت الاسم</label>
+      <input type="text" id="inputBrandSub" placeholder="مثال: نظام إدارة المبيعات والمخزون">
+    </div>
+    <div class="form-group">
+      <label>رفع صورة الشعار (Logo) من الهاتف</label>
+      <input type="file" id="inputBrandLogo" accept="image/*" onchange="handleLogoUpload(event)">
+    </div>
+    <div class="row">
+      <button class="primary-btn" onclick="saveBrandSettings()">حفظ الهوية</button>
+      <button class="secondary-btn" style="margin-top:6px;background:#64748b" onclick="closeBrandModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // مفتاح سري داخلي خاص بك لتوليد والتحقق من أكواد التفعيل
+  const OWNER_SECRET = "SD-SMART-MERCHANT-2026-SEC";
+
+  function generateDeviceId() {
+    let savedId = localStorage.getItem('tjr_device_fingerprint');
+    if (savedId) return savedId;
+
+    const raw = [
+      navigator.userAgent || '',
+      navigator.language || '',
+      screen.width + 'x' + screen.height,
+      screen.colorDepth || '',
+      new Date().getTimezoneOffset(),
+      Math.random().toString(36).substring(2, 10)
+    ].join('|');
+
+    let hash = 2166136261;
+    for (let i = 0; i < raw.length; i++) {
+      hash ^= raw.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const hex = (hash >>> 0).toString(16).toUpperCase().padStart(8, '0');
+    savedId = 'DEV-' + hex.slice(0, 4) + '-' + hex.slice(4, 8);
+    localStorage.setItem('tjr_device_fingerprint', savedId);
+    return savedId;
+  }
+
+  // خوارزمية توليد الكود السري المطابقة تماماً لأداة المالك
+  function computeExpectedKey(deviceId) {
+    const str = deviceId.trim().toUpperCase() + "::" + OWNER_SECRET;
+    let h1 = 0x811c9dc5;
+    let h2 = 0x01000193;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      h1 ^= ch;
+      h1 = Math.imul(h1, 0x01000193);
+      h2 = (Math.imul(h2, 31) + ch) >>> 0;
+    }
+    const part1 = (h1 >>> 0).toString(36).toUpperCase().padStart(5, '0').slice(-5);
+    const part2 = (h2 >>> 0).toString(36).toUpperCase().padStart(5, '0').slice(-5);
+    return 'TJR-' + part1 + '-' + part2;
+  }
+
+  const CURRENT_DEVICE_ID = generateDeviceId();
+  document.getElementById('displayDeviceId').innerText = CURRENT_DEVICE_ID;
+
+  function copyDeviceId() {
+    navigator.clipboard?.writeText(CURRENT_DEVICE_ID);
+    alert('تم نسخ رقم الجهاز: ' + CURRENT_DEVICE_ID);
+  }
+
+  function checkLicenseStatus() {
+    const savedKey = (localStorage.getItem('tjr_license_key') || '').trim().toUpperCase();
+    if (savedKey && savedKey === computeExpectedKey(CURRENT_DEVICE_ID)) {
+      unlockApp();
+    } else {
+      document.getElementById('lockScreen').style.display = 'flex';
+      document.getElementById('mainApp').style.display = 'none';
+    }
+  }
+
+  function verifyActivation() {
+    const enteredKey = (document.getElementById('activationInput').value || '').trim().toUpperCase();
+    const errEl = document.getElementById('lockError');
+    if (enteredKey === computeExpectedKey(CURRENT_DEVICE_ID)) {
+      localStorage.setItem('tjr_license_key', enteredKey);
+      errEl.style.display = 'none';
+      unlockApp();
+    } else {
+      errEl.innerText = 'كود التفعيل غير صحيح أو غير مطابق لهذا الجهاز.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function unlockApp() {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    applyBrand();
+    renderAll();
+  }
+
+  // بيانات النظام بعد التفعيل
+  let records = JSON.parse(localStorage.getItem('smart_merchant_v2_records') || '[]');
+  let inventory = JSON.parse(localStorage.getItem('smart_merchant_v2_inv') || '[]');
+  let brand = JSON.parse(localStorage.getItem('smart_merchant_v2_brand') || '{"name":"التاجر الذكي","sub":"نظام إدارة المبيعات، المخزون، والتحويلات البنكية","logo":""}');
+  let tempLogoData = brand.logo;
+
+  function applyBrand() {
+    document.getElementById('brandTitle').innerText = brand.name || 'التاجر الذكي';
+    document.getElementById('brandSubtitle').innerText = brand.sub || '';
+    document.title = brand.name || 'التاجر الذكي';
+    const logoBox = document.getElementById('logoContainer');
+    if (brand.logo) {
+      logoBox.innerHTML = `<img src="${brand.logo}" class="brand-logo" style="border:none">`;
+    } else {
+      logoBox.innerHTML = '📊';
+    }
+  }
+
+  function openBrandModal() {
+    document.getElementById('inputBrandName').value = brand.name;
+    document.getElementById('inputBrandSub').value = brand.sub;
+    document.getElementById('brandModal').classList.add('open');
+  }
+
+  function closeBrandModal() {
+    document.getElementById('brandModal').classList.remove('open');
+  }
+
+  function handleLogoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      tempLogoData = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveBrandSettings() {
+    brand.name = document.getElementById('inputBrandName').value.trim() || 'التاجر الذكي';
+    brand.sub = document.getElementById('inputBrandSub').value.trim();
+    brand.logo = tempLogoData;
+    localStorage.setItem('smart_merchant_v2_brand', JSON.stringify(brand));
+    applyBrand();
+    closeBrandModal();
+  }
+
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleOpFields() {
+    const isSale = document.getElementById('opType').value === 'sale';
+    document.getElementById('selectProductGroup').style.display = isSale ? 'block' : 'none';
+    document.getElementById('qtyGroup').style.display = isSale ? 'block' : 'none';
+    document.getElementById('costGroup').style.display = isSale ? 'block' : 'none';
+    document.getElementById('amountLabel').innerText = isSale ? 'سعر بيع الوحدة' : 'قيمة المصروف';
+  }
+
+  function addProduct() {
+    const name = document.getElementById('prodName').value.trim();
+    const qty = parseInt(document.getElementById('prodQty').value) || 0;
+    const cost = parseFloat(document.getElementById('prodCost').value) || 0;
+    const price = parseFloat(document.getElementById('prodPrice').value) || 0;
+
+    if (!name || price <= 0) {
+      alert('يرجى إدخال اسم الصنف وسعر البيع');
+      return;
+    }
+
+    inventory.push({ id: Date.now(), name, qty, cost, price });
+    localStorage.setItem('smart_merchant_v2_inv', JSON.stringify(inventory));
+    document.getElementById('prodName').value = '';
+    document.getElementById('prodQty').value = '';
+    document.getElementById('prodCost').value = '';
+    document.getElementById('prodPrice').value = '';
+    renderAll();
+  }
+
+  function restockProduct(id) {
+    const addQty = parseInt(prompt('أدخل الكمية المضافة للمخزون:', '1'));
+    if (!addQty || addQty <= 0) return;
+    const item = inventory.find(p => p.id === id);
+    if (item) {
+      item.qty += addQty;
+      localStorage.setItem('smart_merchant_v2_inv', JSON.stringify(inventory));
+      renderAll();
+    }
+  }
+
+  function deleteProduct(id) {
+    if (!confirm('حذف هذا الصنف من المخزون؟')) return;
+    inventory = inventory.filter(p => p.id !== id);
+    localStorage.setItem('smart_merchant_v2_inv', JSON.stringify(inventory));
+    renderAll();
+  }
+
+  function fillProductDetails() {
+    const prodId = document.getElementById('productSelect').value;
+    if (!prodId) return;
+    const item = inventory.find(p => p.id == prodId);
+    if (item) {
+      document.getElementById('itemDesc').value = item.name;
+      document.getElementById('amount').value = item.price;
+      document.getElementById('cost').value = item.cost;
+    }
+  }
+
+  function addRecord() {
+    const type = document.getElementById('opType').value;
+    const method = document.getElementById('payMethod').value;
+    const prodId = document.getElementById('productSelect').value;
+    const desc = document.getElementById('itemDesc').value.trim();
+    const qty = type === 'sale' ? (parseInt(document.getElementById('saleQty').value) || 1) : 1;
+    const unitAmount = parseFloat(document.getElementById('amount').value) || 0;
+    const unitCost = type === 'sale' ? (parseFloat(document.getElementById('cost').value) || 0) : 0;
+
+    if (!desc || unitAmount <= 0) {
+      alert('يرجى إدخال البيان والمبلغ بشكل صحيح');
+      return;
+    }
+
+    if (type === 'sale' && prodId) {
+      const invItem = inventory.find(p => p.id == prodId);
+      if (invItem) {
+        if (invItem.qty < qty) {
+          alert(`الكمية المتوفرة في المخزون (${invItem.qty}) أقل من الكمية المطلوبة!`);
+          return;
+        }
+        invItem.qty -= qty;
+        localStorage.setItem('smart_merchant_v2_inv', JSON.stringify(inventory));
+      }
+    }
+
+    const totalAmount = unitAmount * qty;
+    const totalCost = unitCost * qty;
+    const profit = type === 'sale' ? (totalAmount - totalCost) : -totalAmount;
+
+    records.unshift({
+      id: Date.now(),
+      date: new Date().toLocaleDateString('ar-EG'),
+      type, method, prodId, desc, qty, totalAmount, totalCost, profit
+    });
+
+    localStorage.setItem('smart_merchant_v2_records', JSON.stringify(records));
+    document.getElementById('productSelect').value = '';
+    document.getElementById('itemDesc').value = '';
+    document.getElementById('saleQty').value = '1';
+    document.getElementById('amount').value = '';
+    document.getElementById('cost').value = '';
+    renderAll();
+  }
+
+  function deleteRecord(id) {
+    const rec = records.find(r => r.id === id);
+    if (rec && rec.type === 'sale' && rec.prodId) {
+      const invItem = inventory.find(p => p.id == rec.prodId);
+      if (invItem) {
+        invItem.qty += rec.qty;
+        localStorage.setItem('smart_merchant_v2_inv', JSON.stringify(inventory));
+      }
+    }
+    records = records.filter(r => r.id !== id);
+    localStorage.setItem('smart_merchant_v2_records', JSON.stringify(records));
+    renderAll();
+  }
+
+  function renderAll() {
+    const select = document.getElementById('productSelect');
+    select.innerHTML = '<option value="">-- صنف حر غير مسجل بالمخزون --</option>';
+    inventory.forEach(p => {
+      select.innerHTML += `<option value="${p.id}">${p.name} (متوفر: ${p.qty})</option>`;
+    });
+
+    const invBody = document.getElementById('inventoryBody');
+    invBody.innerHTML = '';
+    let invCostSum = 0, invValSum = 0;
+    inventory.forEach(p => {
+      invCostSum += p.qty * p.cost;
+      invValSum += p.qty * p.price;
+      const qtyBadge = p.qty <= 3
+        ? `<span class="badge badge-low">${p.qty} (منخفض)</span>`
+        : `<span class="badge badge-ok">${p.qty}</span>`;
+      invBody.innerHTML += `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td>${qtyBadge}</td>
+          <td>${p.cost.toLocaleString()}</td>
+          <td>${p.price.toLocaleString()}</td>
+          <td>
+            <button class="restock-btn" onclick="restockProduct(${p.id})">+ كمية</button>
+            <button class="danger-btn" onclick="deleteProduct(${p.id})">×</button>
+          </td>
+        </tr>`;
+    });
+    document.getElementById('invTotalCost').innerText = invCostSum.toLocaleString();
+    document.getElementById('invTotalValue').innerText = invValSum.toLocaleString();
+
+    let sales = 0, profit = 0, bank = 0, cash = 0;
+    const recBody = document.getElementById('recordsBody');
+    recBody.innerHTML = '';
+    records.forEach(r => {
+      if (r.type === 'sale') {
+        sales += r.totalAmount;
+        if (r.method === 'bank') bank += r.totalAmount;
+        else cash += r.totalAmount;
+      } else {
+        if (r.method === 'bank') bank -= r.totalAmount;
+        else cash -= r.totalAmount;
+      }
+      profit += r.profit;
+
+      const methodBadge = r.type === 'expense'
+        ? '<span class="badge badge-exp">مصروف</span>'
+        : (r.method === 'bank' ? '<span class="badge badge-bank">بنكي</span>' : '<span class="badge badge-cash">كاش</span>');
+
+      recBody.innerHTML += `
+        <tr>
+          <td>${r.desc} ${methodBadge}<br><small style="color:#64748b">${r.date}</small></td>
+          <td>${r.type === 'sale' ? r.qty : '-'}</td>
+          <td>${r.totalAmount.toLocaleString()}</td>
+          <td style="color:${r.profit >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold">${r.profit.toLocaleString()}</td>
+          <td><button class="danger-btn" onclick="deleteRecord(${r.id})">×</button></td>
+        </tr>`;
+    });
+
+    document.getElementById('totalSales').innerText = sales.toLocaleString();
+    const profitEl = document.getElementById('netProfit');
+    profitEl.innerText = profit.toLocaleString();
+    profitEl.className = 'stat-value ' + (profit >= 0 ? 'profit' : 'loss');
+    document.getElementById('bankTotal').innerText = bank.toLocaleString();
+    document.getElementById('cashTotal').innerText = cash.toLocaleString();
+  }
+
+  function exportSalesCSV() {
+    if (!records.length) return alert('لا توجد بيانات للتصدير');
+    let csv = '\uFEFFالتاريخ,النوع,البيان,الكمية,طريقة الدفع,الإجمالي,التكلفة,صافي الربح\n';
+    records.forEach(r => {
+      csv += `${r.date},${r.type === 'sale' ? 'مبيعات' : 'مصروف'},"${r.desc}",${r.qty},${r.method === 'bank' ? 'تحويل بنكي' : 'كاش'},${r.totalAmount},${r.totalCost},${r.profit}\n`;
+    });
+    downloadCSV(csv, `${brand.name}_المبيعات.csv`);
+  }
+
+  function exportInventoryCSV() {
+    if (!inventory.length) return alert('المخزون فارغ');
+    let csv = '\uFEFFاسم الصنف,الكمية المتبقية,تكلفة الوحدة,سعر البيع,إجمالي التكلفة,إجمالي القيمة البيعية\n';
+    inventory.forEach(p => {
+      csv += `"${p.name}",${p.qty},${p.cost},${p.price},${p.qty * p.cost},${p.qty * p.price}\n`;
+    });
+    downloadCSV(csv, `${brand.name}_المخزون.csv`);
+  }
+
+  function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+
+  
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  checkLicenseStatus();
+</script>
+</body>
+</html>
